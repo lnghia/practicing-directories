@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "xstring": "cpp",
+        "iosfwd": "cpp",
+        "thread": "cpp",
+        "xxatomic": "cpp",
+        "iomanip": "cpp",
+        "iostream": "cpp",
+        "ios": "cpp"
+    }
+}
