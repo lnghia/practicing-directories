@@ -24,23 +24,17 @@ int solve(vector<pair<int, int>>& stuffList){
             }
 
             if(maxValWithCurrItem>maxValWithoutCurrItem){
-                //cout << item << ' ' << capacity << '\n';
                 dp[item][capacity]=maxValWithCurrItem;
                 get<0>(path[item][capacity])=1;
                 get<1>(path[item][capacity])=item-1;
                 get<2>(path[item][capacity])=remainingSlot;
             }
-            else if(maxValWithCurrItem<=maxValWithoutCurrItem){
-                //cout << item << ' ' << capacity << '\n';
+            else{
                 dp[item][capacity]=maxValWithoutCurrItem;
                 get<0>(path[item][capacity])=0;
                 get<1>(path[item][capacity])=item-1;
                 get<2>(path[item][capacity])=capacity;
             }
-            // else{
-
-            // }
-            //dp[item][capacity]=max(maxValWithoutCurrItem, maxValWithCurrItem);
         }
     }
 
@@ -61,7 +55,7 @@ void printCombination(){
 }
 
 int main(){
-    vector<pair<int, int>> stuffList={ {10, 50},{40, 4},{30, 6},{50, 3} };
+    vector<pair<int, int>> stuffList={ {50, 11},{30, 2},{20, 6},{30, 1} };
     bagCapacity=11; stuffNum=stuffList.size();
 
     dp.resize(stuffNum+1, vector<int>(bagCapacity+1));
