@@ -124,11 +124,19 @@ public:
     } 
 
     void askPlayerForNextMove(){
-        cout << "Enter your next move!\n";
-        cout << "x: ";
-        cin >> nextMove.first;
-        cout << "y: ";
-        cin >> nextMove.second;
+        while(1){
+            cout << "Enter your next move!\n";
+            cout << "x: ";
+            cin >> nextMove.first;
+            cout << "y: ";
+            cin >> nextMove.second;
+            if(gb[nextMove.first][nextMove.second]!=' '){
+                cout << "Invalid move!\n";
+            }
+            else{
+                break;
+            }
+        }
 
         gb[nextMove.first][nextMove.second]='X';
         ++cache[nextMove.first];
