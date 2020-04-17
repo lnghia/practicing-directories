@@ -40,7 +40,7 @@ public:
         return 0;
     }
 
-    int min_val(int x, int y){
+    int min_val(int x, int y, int prev=INT_MIN){
         if(isTerminated()){
             return utility(x, y);
         }
@@ -54,7 +54,7 @@ public:
                     --cache[i];
                     --cache[j+3];
                     --count;
-                    tmp=max_val(i, j);
+                    tmp=max_val(i, j, v);
                     if(v>tmp){
                         v=tmp;
                         a=i;
@@ -64,6 +64,9 @@ public:
                     ++cache[i];
                     ++cache[j+3];
                     ++count;
+                    if(prev>=tmp){
+                        return tmp;
+                    }
                 }
             }
         }
@@ -73,7 +76,7 @@ public:
         return v;
     }
 
-    int max_val(int x, int y){
+    int max_val(int x, int y, int prev=INT_MAX){
         if(isTerminated()){
             return utility(x, y);
         }
@@ -87,7 +90,7 @@ public:
                     ++cache[i];
                     ++cache[j+3];
                     --count;
-                    tmp=min_val(i, j);
+                    tmp=min_val(i, j, v);
                     if(v<tmp){
                         v=tmp;
                         a=i;
@@ -97,6 +100,9 @@ public:
                     --cache[i];
                     --cache[j+3];
                     ++count;
+                    if(prev<=tmp){
+                        return tmp;
+                    }
                 }
             }
         }
