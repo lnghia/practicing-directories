@@ -4,18 +4,21 @@ using namespace std;
 
 class GameBoard{
     vector<vector<char>> gb;
-    pair<int, int> nextMove;
+    pair<int, int> nextMove={-1, -1};
     int num=3;
-    int m=3, n=4;
+    int m=3, n=3;
     int cnt=m*n;
     bool t=0;
-    bool turn=1;
+    bool turn=0;
     string vertical="|", horizontal="";
+    unordered_map<char, int> score={{'X', 1}, {'O', -1}, {' ', 0}};
+    queue<pair<int, int>> winMoves;
+    stack<pair<int, int>> _winMoves;
 
 public:
 
     GameBoard(){
-        gb.resize(m, vector<char>(n, ' '));
+        gb.assign(m, vector<char>(n, ' '));
 
         for(int i=0; i<n; ++i){
             horizontal+=" ---";
@@ -23,88 +26,78 @@ public:
         horizontal+='\n';
     }
 
-    int utility(/*int x, int y*/){
+    int utility(char winner){
+        return score[winner];
+    }
+
+    pair<bool, char> check(int x, int y, int stepX, int stepY){
         int count=0;
+        int px=x, py=y;
+        char latestMove=gb[x][y];
 
-        for(int i=0; i<m; ++i){
-            for(int j=0; j<n; ++j){
-                count=0;
-                if(j<=n-num){
-                    for(int k=j; k<=j+(num-1); ++k){
-                        if(gb[i][k]=='X'){
-                            ++count;
-                        }
-                        else if(gb[i][k]=='O'){
-                            --count;
-                        }
-                    }
+        queue<pair<int, int>> tmp;
+        stack<pair<int, int>> _tmp;
 
-                    if(count==num || count==(num*-1)){
-                        return (count==num)?1:-1;
-                    }
-                }
-
-                count=0;
-                if(i<=m-num){
-                    for(int k=i; k<=i+(num-1); ++k){
-                        if(gb[k][j]=='X'){
-                            ++count;
-                        }
-                        else if(gb[k][j]=='O'){
-                            --count;
-                        }
-                    }
-                    if(count==num || count==(num*-1)){
-                        return (count==num)?1:-1;
-                    }
-                }
-
-                count=0;
-                if(i<=m-num && j<=n-num){
-                    int t1=i, t2=j;
-
-                    for(int k=0; k<num; ++k){
-                        if(gb[t1][t2]=='X'){
-                            ++count;
-                        }
-                        else if(gb[t1][t2]=='O'){
-                            --count;
-                        }
-                        ++t1; ++t2;
-                    }
-                    if(count==num || count==(num*-1)){
-                        return (count==num)?1:-1;
-                    }
-                }
-
-                count=0;
-                if(i<=m-num && j-(num-1)>=0){
-                    int t1=i, t2=j;
-
-                    for(int k=0; k<num; ++k){
-                        if(gb[t1][t2]=='X'){
-                            ++count;
-                        }
-                        else if(gb[t1][t2]=='O'){
-                            --count;
-                        }
-                        ++t1; --t2;
-                    }
-                    if(count==num || count==(num*-1)){
-                        return (count==num)?1:-1;
-                    }
-                }
+        for(int i=0; i<num; ++i){
+            if(px>=m || py>=n || px<0 || py<0 || gb[px][py]!=latestMove){
+                break;
             }
+            ++count;
+            tmp.push({px, py});
+            px+=stepX;
+            py+=stepY;
         }
 
-        return (!cnt)?0:2;
+        if(count==num){
+            winMoves=tmp;
+            _winMoves=_tmp;
+
+            return {1, latestMove};
+        } 
+
+        for(int i=0; i<num-1; ++i){
+            x-=stepX;
+            y-=stepY;
+            if(x>=m || y>=n || x<0 || y<0 || gb[x][y]!=latestMove){
+                break;
+            }
+            ++count;
+            _tmp.push({x, y});
+        }
+
+        if(count==num){
+            winMoves=tmp;
+            _winMoves=_tmp;
+
+            return {1, latestMove};
+        } 
+        
+        return !cnt?make_pair(1, ' '):make_pair(0, ' ');
+    }
+
+    pair<bool, char> isTerminated(int x, int y){
+        if(x==-1){
+            return {0, ' '};
+        }
+
+        pair<bool, char> rs1=check(x, y, 1, 0);
+        pair<bool, char> rs2=check(x, y, 0, 1);
+        pair<bool, char> rs3=check(x, y, 1, 1);
+        pair<bool, char> rs4=check(x, y, 1, -1);
+
+        if(rs1.first) return rs1;
+        if(rs2.first) return rs2;
+        if(rs3.first) return rs3;
+        if(rs4.first) return rs4;
+        
+        return {0, ' '};
     }
 
     int min_val(int x, int y, int prev=INT_MIN){
-        int rs=utility(/*x, y*/);
+        pair<bool, char> rs=isTerminated(x, y);
 
-        if(rs==-1 || rs==1 || !rs){
-            return rs;
+        if(rs.first){
+            return utility(rs.second);
         }
 
         int v=INT_MAX, a, b, tmp;
@@ -113,6 +106,8 @@ public:
             for(int j=0; j<n; ++j){
                 if(gb[i][j]==' '){
                     gb[i][j]='O';
+                    nextMove.first=i;
+                    nextMove.second=j;
                     --cnt;
                     tmp=max_val(i, j, v);
                     if(v>tmp){
@@ -121,6 +116,8 @@ public:
                         b=j;
                     }
                     gb[i][j]=' ';
+                    nextMove.first=x;
+                    nextMove.second=y;
                     ++cnt;
                     if(prev>=tmp){
                         return tmp;
@@ -135,10 +132,10 @@ public:
     }
 
     int max_val(int x, int y, int prev=INT_MAX){
-        int rs=utility(/*x, y*/);
+        pair<bool, char> rs=isTerminated(x, y);
 
-        if(rs==-1 || rs==1 || !rs){
-            return rs;
+        if(rs.first){
+            return utility(rs.second);
         }
 
         int v=INT_MIN, a, b, tmp;
@@ -147,6 +144,8 @@ public:
             for(int j=0; j<n; ++j){
                 if(gb[i][j]==' '){
                     gb[i][j]='X';
+                    nextMove.first=i;
+                    nextMove.second=j;
                     --cnt;
                     tmp=min_val(i, j, v);
                     if(v<tmp){
@@ -155,6 +154,8 @@ public:
                         b=j;
                     }
                     gb[i][j]=' ';
+                    nextMove.first=x;
+                    nextMove.second=y;
                     ++cnt;
                     if(prev<=tmp){
                         return tmp;
@@ -171,6 +172,8 @@ public:
     void askPlayerForNextMove(){
         while(1){
             cout << "Enter your next move!\n";
+            cout << "You are X !\n";
+            cout << "Note: enter two integers indicating coordinates of the cell you want to put your move in. (0 <= x, y <= 2) !\n";
             cout << "x: ";
             cin >> nextMove.first;
             cout << "y: ";
@@ -203,14 +206,33 @@ public:
         --cnt;
     }
 
-    void draw(){
+    void draw(bool isOver=0){
         system("clear");
+
+        vector<pair<int, int>> temp;
+        int ind=0;
+        if(isOver){
+            while(!_winMoves.empty()){
+                temp.push_back(_winMoves.top());
+                _winMoves.pop();
+            }
+            while(!winMoves.empty()){
+                temp.push_back(winMoves.front());
+                winMoves.pop();
+            }
+        }
 
         cout << horizontal;
         for(int i=0; i<m; ++i){
             cout << '|';
             for(int j=0; j<n; ++j){
-                cout << ' ' << gb[i][j] << ' ' << '|';
+                if(isOver && i==temp[ind].first && j==temp[ind].second){
+                    cout << "\033[1;32m " <<  gb[i][j] << "\033[0m |";
+                    ++ind;
+                }
+                else{
+                    cout << ' ' << gb[i][j] << ' ' << '|';
+                }
             }
             cout << "\n";
             cout << horizontal;
@@ -218,14 +240,17 @@ public:
     }
 
     void gameLoop(){
-        int util=0;
+        pair<bool, char> rs;
 
         cout << "Player is 'X'\n";
 
         while(1){
             draw();
-            util=utility(/*nextMove.first, nextMove.second*/);
-            if(util==1 || util==-1 || !util){
+
+            rs=isTerminated(nextMove.first, nextMove.second);
+            if(rs.first){
+                draw(rs.second!=' ');
+
                 break;
             }
 
@@ -233,14 +258,6 @@ public:
                 askPlayerForNextMove();
             }
             else{
-                // if(!t){
-                //     nextMove.first=1;
-                //     nextMove.second=1;
-                //     gb[nextMove.first][nextMove.second]='O';
-                //     --cnt;
-                //     t=!t;
-                //     continue;
-                // }
                 bot();
             }
             turn=!turn;
