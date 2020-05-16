@@ -64,6 +64,8 @@ while error.all() != 0:
   for i in range (k):
     error[i]=distance(centroids[i], centroids_old[i])
 
+
+# draw the result 
 colors = ['r', 'g', 'b']
 
 for i in range (k):
