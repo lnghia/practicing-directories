@@ -4,6 +4,12 @@ using namespace std;
 
 class Solution {
 public:
+    Solution(){
+        ios::sync_with_stdio(false);
+        cin.tie(nullptr);
+        cout.tie(nullptr);
+    }
+
     inline string myTrim(string &str){
         int i=0;
         string ans="";

@@ -70,6 +70,22 @@ public:
         
         return h;
     }
+
+    ListNode* reverseLinkedList(ListNode* head){
+        if(head==NULL){
+            return head;
+        }
+
+        ListNode *curr=head, *prev=NULL, *nxt=head->next;
+
+        while(curr!=NULL){
+            curr->next=prev;
+            prev=curr;
+            curr=nxt;
+        }
+
+        return prev;
+    }
     
     ListNode* reverseList(ListNode* head) {
         if(head==NULL){
